@@ -1,0 +1,57 @@
+version: "3.9"
+
+# Local dev only. Spins up Postgres (standing in for a Supabase project),
+# auto-applying the schema + demo seed data on first boot, plus the API and
+# AI service so `docker compose up` gets the whole backend running without
+# any external accounts (SHOPIFY_MODE/AI_MODE/*_MODE all default to mock).
+# Run `npm run dev:web` separately on the host for the Next.js frontend
+# (faster iteration with hot reload than containerizing it here).
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: retainai
+    ports:
+      - "54329:5432"
+    volumes:
+      - retainai-db:/var/lib/postgresql/data
+      - ./packages/db/migrations:/docker-entrypoint-initdb.d/00-migrations:ro
+      - ./packages/db/seed:/docker-entrypoint-initdb.d/01-seed:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  ai-service:
+    build: ./apps/ai-service
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/retainai
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    build: ./apps/api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/retainai
+      AI_SERVICE_URL: http://ai-service:8000
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ai-service:
+        condition: service_started
+
+volumes:
+  retainai-db:

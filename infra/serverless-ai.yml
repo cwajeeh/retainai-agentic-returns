@@ -1,0 +1,32 @@
+# AWS Lambda deployment (container image) for the AI Negotiator service.
+# Run from apps/ai-service/ — see infra/README.md for full setup + deploy steps.
+#
+#   cd apps/ai-service && serverless deploy --config ../../infra/serverless-ai.yml
+
+service: retainai-ai-service
+
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  region: ${env:AWS_REGION, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+  ecr:
+    images:
+      negotiator:
+        path: ./
+        file: Dockerfile.lambda
+  environment:
+    DATABASE_URL: ${env:DATABASE_URL}
+    OPENAI_API_KEY: ${env:OPENAI_API_KEY, ''}
+    OPENAI_MODEL: ${env:OPENAI_MODEL, 'gpt-4o'}
+    AI_MODE: ${env:AI_MODE, 'mock'}
+
+functions:
+  negotiate:
+    image:
+      name: negotiator
+    memorySize: 512
+    timeout: 29
+    events:
+      - httpApi: "*"

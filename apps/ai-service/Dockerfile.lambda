@@ -1,0 +1,8 @@
+# Separate from ./Dockerfile (used for docker-compose/ECS): this one targets
+# AWS Lambda's container-image runtime. Build & push with the AWS Lambda base
+# image so the Lambda Runtime Interface Client is present; see infra/README.md.
+FROM public.ecr.aws/lambda/python:3.11
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY app ${LAMBDA_TASK_ROOT}/app
+CMD ["app.lambda_handler.handler"]
