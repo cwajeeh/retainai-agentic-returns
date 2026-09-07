@@ -27,7 +27,9 @@ services:
       retries: 10
 
   ai-service:
-    build: ./apps/ai-service
+    build:
+      context: .
+      dockerfile: apps/ai-service/Dockerfile
     restart: unless-stopped
     env_file: .env
     environment:
@@ -39,7 +41,9 @@ services:
         condition: service_healthy
 
   api:
-    build: ./apps/api
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
     restart: unless-stopped
     env_file: .env
     environment:

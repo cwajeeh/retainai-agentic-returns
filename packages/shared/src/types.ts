@@ -129,6 +129,25 @@ export interface ShippingLabel {
   createdAt: string;
 }
 
+// ---- Merchant settings (integration mode status shown on the Settings page) ----
+
+export interface IntegrationStatus {
+  mode: "mock" | "live";
+}
+
+export interface MerchantSettings {
+  merchant: Merchant;
+  integrations: {
+    shopify: IntegrationStatus;
+    ai: IntegrationStatus;
+    shipping: {
+      dhl: IntegrationStatus;
+      fedex: IntegrationStatus;
+      ups: IntegrationStatus;
+    };
+  };
+}
+
 // ---- Analytics ----
 
 export interface RevenueSummary {

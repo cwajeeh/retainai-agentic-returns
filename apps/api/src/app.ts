@@ -5,6 +5,7 @@ import { shopifyWebhookRouter } from "./shopify/webhooks";
 import { returnsRouter } from "./routes/returns";
 import { analyticsRouter } from "./routes/analytics";
 import { merchantsRouter } from "./routes/merchants";
+import { lineItemsRouter } from "./routes/lineItems";
 import { errorHandler } from "./middleware/errorHandler";
 
 /** Builds the Express app. Shared by the local/container entrypoint
@@ -27,6 +28,7 @@ export function createApp() {
   app.use("/returns", returnsRouter);
   app.use("/analytics", analyticsRouter);
   app.use("/merchants", merchantsRouter);
+  app.use("/line-items", lineItemsRouter);
 
   app.use(errorHandler);
 

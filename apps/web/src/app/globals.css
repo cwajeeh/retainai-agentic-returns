@@ -3,5 +3,27 @@
 @tailwind utilities;
 
 body {
-  @apply bg-slate-50 text-slate-900;
+  @apply bg-ink-50 text-ink-900 antialiased;
+  font-feature-settings: "cv11", "ss01";
+}
+
+* {
+  border-color: theme("colors.ink.200");
+}
+
+::selection {
+  background-color: theme("colors.brand.100");
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+.skeleton {
+  @apply bg-ink-100 rounded-md;
+  animation: pulse-soft 1.6s ease-in-out infinite;
 }

@@ -1,4 +1,12 @@
-import type { Negotiation, NegotiateResponse, ReturnRequest, RevenueSummary } from "@retainai/shared";
+import type {
+  MerchantSettings,
+  Negotiation,
+  NegotiateResponse,
+  Order,
+  OrderLineItem,
+  ReturnRequest,
+  RevenueSummary,
+} from "@retainai/shared";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -21,6 +29,12 @@ export const api = {
 
   getReturn: (id: string) =>
     fetch(`${API_URL}/returns/${id}`, { cache: "no-store" }).then((r) => json<ReturnRequest & { negotiation: Negotiation | null }>(r)),
+
+  getLineItem: (lineItemId: string) =>
+    fetch(`${API_URL}/line-items/${lineItemId}`, { cache: "no-store" }).then((r) => json<{ order: Order; lineItem: OrderLineItem }>(r)),
+
+  getMerchantSettings: (merchantId: string) =>
+    fetch(`${API_URL}/merchants/${merchantId}/settings`, { cache: "no-store" }).then((r) => json<MerchantSettings>(r)),
 
   createReturn: (input: { merchantId: string; lineItemId: string; reason: string; customerComment?: string }) =>
     fetch(`${API_URL}/returns`, {

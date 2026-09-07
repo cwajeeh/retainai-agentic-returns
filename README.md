@@ -61,31 +61,97 @@ it just hasn't been run against a live account, because none were available
 while scaffolding this. Treat those files as a strong first draft to verify
 against sandbox credentials, not as battle-tested integrations.
 
-## Quickstart (fully local, no external accounts)
+## Run with Docker
+
+This is the easiest way to start the project locally. The repo already includes
+Docker Compose for Postgres, the API, and the AI service, and everything runs
+with mock integrations by default.
+
+### 1) Configure environment
 
 ```bash
-cp .env.example .env          # defaults are all *_MODE=mock — nothing to fill in to start
+cp .env.example .env
+```
+
+The defaults in the example file already use mock mode (`AI_MODE=mock`,
+`SHOPIFY_MODE=mock`, carrier modes set to `mock`), so you can run the project
+without any real credentials.
+
+### 2) Start the backend stack
+
+```bash
+docker compose up -d postgres ai-service api
+```
+
+This starts:
+
+- Postgres at localhost:54329
+- AI service at http://localhost:8000
+- API at http://localhost:3001
+
+### 3) Install web dependencies and start the frontend
+
+In a separate terminal from the repo root:
+
+```bash
+npm install --workspaces
+npm run build --workspace=packages/shared
+npm run dev:web
+```
+
+This starts the Next.js app at http://localhost:3000.
+
+### 4) Seed the database
+
+If this is the first time setting up the project, seed the demo data:
+
+```bash
+npm run seed --workspace=apps/api
+```
+
+The seed script applies the SQL migrations and inserts demo records.
+
+### 5) Open the app
+
+Visit:
+
+- http://localhost:3000 for the merchant dashboard and customer return flow
+
+Then open the return flow in the UI and test the mock AI negotiation loop.
+
+### Alternative: local-only services without Docker
+
+If you prefer to run the API and AI service directly on your machine instead of
+through Docker:
+
+```bash
+cp .env.example .env
 npm install --workspaces
 npm run build --workspace=packages/shared
 
-# Postgres (pick one):
-docker compose up postgres -d                 # OR run your own local Postgres
-npm run seed --workspace=apps/api             # applies migrations/*.sql + seed data
+# Postgres only
+docker compose up postgres -d
 
-# Run all three services (separate terminals):
-npm run dev:api          # http://localhost:3001
-npm run dev:ai           # http://localhost:8000  (needs: cd apps/ai-service && pip install -r requirements.txt, ideally in a venv)
-npm run dev:web          # http://localhost:3000
+# Seed DB
+npm run seed --workspace=apps/api
+
+# AI service
+cd apps/ai-service
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+
+# API
+npm run dev:api
+
+# Web
+npm run dev:web
 ```
-
-Then open http://localhost:3000 — "Try the customer return flow" walks
-through starting a return and chatting with the (mock) AI negotiator;
-"Open merchant dashboard" shows the Revenue Saved vs. Refunded view.
 
 The whole loop was verified end-to-end while building this (return created →
 AI proposes an in-stock same-product exchange → customer accepts → inventory
-adjusted → mock shipping label generated → analytics view updated) — see the
-git history / PR description for the exact commands used.
+adjusted → mock shipping label generated → analytics view updated).
 
 ## Going live, piece by piece
 
